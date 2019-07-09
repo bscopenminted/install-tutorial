@@ -11,7 +11,7 @@ component_executor_repo: https://github.com/openminted/omtd-component-executor.g
 component_executor_version: master
 
 # Destination dir for omtdImporter
-root_install_directory_for_importer: /root/omtd-component-executor
+root_install_directory_for_importer: /home/sysadmin/omtd-component-executor
 
 # The dir that the Galaxy executor is installed
 executor_directory: /srv/executor

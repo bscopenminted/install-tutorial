@@ -1,7 +1,7 @@
 [executor]
-83.212.73.33
+10.43.0.12 ansible_user=sysadmin ansible_sudo_pass=sysadmin! ansible_password=sysadmin!
 
 [editor]
-83.212.73.33
+10.43.0.12 ansible_user=sysadmin ansible_sudo_pass=sysadmin! ansible_password=sysadmin!
 
 

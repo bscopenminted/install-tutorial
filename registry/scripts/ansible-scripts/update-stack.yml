@@ -24,6 +24,10 @@
                 dest: /home/{{ansible_user}}/workflow-server.env
 
         - copy:
+                src: ../properties/workflow-service.env
+                dest: /home/{{ansible_user}}/workflow-service.env
+
+        - copy:
                 src: ../properties/swarm-infra.yml
                 dest: /home/{{ansible_user}}/swarm-infra.yml
 

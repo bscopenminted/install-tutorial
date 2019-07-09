@@ -1,6 +1,7 @@
 # **** Stop Galaxies **** 
 - hosts: executor
-  remote_user: root
+  #remote_user: root
+  become: True
   tasks: 
   - name: Stop service executor, if started
     service:
@@ -9,7 +10,8 @@
 
 
 - hosts: editor
-  remote_user: root
+  #remote_user: root
+  become: True
   tasks:
   - name: Stop service editor, if started
     service:
@@ -18,19 +20,22 @@
 
 # **** Configure/Install extras at  Galaxies ****
 - hosts: executor
-  remote_user: root
+  #remote_user: root
+  become: True
   roles:
       - { role: tecris.maven, maven_major: 3, maven_version: 3.5.4, maven_home_parent_directory: /opt }
       - role: executor
 
 - hosts: editor
-  remote_user: root
+  #remote_user: root
+  become: True
   roles:
       - role: editor
 
 # **** Restart Galaxies ****
 - hosts: executor
-  remote_user: root
+  #remote_user: root
+  become: True
   tasks:
   - name: Restart service executor
     service:
@@ -39,7 +44,8 @@
 
 
 - hosts: editor
-  remote_user: root
+  #remote_user: root
+  become: True
   tasks:
   - name: Restart service editor
     service:

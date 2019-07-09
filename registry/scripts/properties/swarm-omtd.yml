@@ -65,6 +65,9 @@ services:
       - "8881:8881"
     networks:
       - omtd-net
+    volumes:
+      - /home/sysadmin/workflow-service.env:/application.properties
+    #env_file : workflow-service.env
     deploy:
       restart_policy:
         condition: on-failure
@@ -76,6 +79,8 @@ volumes:
     driver: local
   registrydata:
     driver: local
+#  app.properties:
+#    driver: local
 
 networks:
   omtd-net:

@@ -1,0 +1,130 @@
+#
+#  Manager node: 10.43.0.11 contains the followin containers:
+#  docker.openminted.eu/omtd-platform:latest
+#  docker.openminted.eu/omtd-registry:latest 
+#  docker.openminted.eu/omtd-content-service:latest
+#  docker.openminted.eu/omtd-postgres:latest
+#  docker.openminted.eu/omtd-store-service:latest
+#  docker.openminted.eu/omtd-workflow-server:latest
+#  docker.elastic.co/elasticsearch/elasticsearch:5.2.2
+#  rmohr/activemq:5.14.0-alpine
+#  bitnami/redis:latest
+#
+#
+
+server {
+    listen 80;
+    server_name bscopenmint01.bsc.es;
+
+#    no ssl cert yet just internal access
+#    ssl_certificate           /etc/nginx/ssl/server.crt;
+#    ssl_certificate_key       /etc/nginx/ssl/server.key;
+#
+#    ssl on;
+#    ssl_session_cache  builtin:1000  shared:SSL:10m;
+#    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+#    ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+#    ssl_prefer_server_ciphers on;
+
+    client_max_body_size 256M;
+
+    access_log            /var/log/nginx/services.access.log;
+
+    location / {
+        # this goes to omtd-platform container
+
+        sub_filter 'http://10.43.0.11:' 'http://bscopenmint01.bsc.es:';
+        sub_filter_once off;
+        sub_filter_types *;
+
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        # Fix the <E2><80><9C>It appears that your reverse proxy set up is broken" error.
+        proxy_pass          http://10.43.0.11:80;
+        proxy_read_timeout  90;
+        proxy_redirect      http://10.43.0.11:80 http://bscopenmint01.bsc.es;
+    }
+
+    location /api {
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        # Fix the <E2><80><9C>It appears that your reverse proxy set up is broken" error.
+        proxy_pass          http://10.43.0.11:8080/omtd-registry;
+        proxy_read_timeout  900;
+    }
+    
+    location /connector {
+
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        # Fix the <E2><80><9C>It appears that your reverse proxy set up is broken" error.
+        proxy_pass          http://10.43.0.11:8888/content-connector-service;
+        proxy_read_timeout  90;
+    }
+
+
+    location /workflow {
+        #
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        #proxy_set_header    REMOTE_USER <REMOTE_USER>; # extra
+        #proxy_set_header    GX_SECRET <editoromtdsecret>; # extra
+
+        # Fix the <E2><80><9C>It appears that your reverse proxy set up is broken" error.
+        rewrite ^/workflow(.*) /$1 break;
+        #rewrite ^/workflow(/.*)$ /$1 last;
+        proxy_pass          http://10.43.0.11:8881;
+        #proxy_pass          http://10.43.0.12/nonexistent;
+        proxy_read_timeout  90;
+    }
+
+    location /galaxy {
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_set_header    REMOTE_USER <REMOTE_USER>;
+        proxy_set_header    GX_SECRET <executoromtdsecret>;
+        #proxy_set_header    GX_SECRET <SECRET>;
+        #proxy_set_header    REMOTE_USER $remote_user;
+        #proxy_set_header    GX_SECRET $secret;
+
+        rewrite ^/galaxy(.*) /$1 break;
+        proxy_pass          http://10.43.0.12/galaxy;
+        proxy_read_timeout  90;
+
+        sub_filter "/static/(.*)" "/galaxy/static/$1";
+    }
+
+    location /viewer {
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+    rewrite ^/viewer(.*) /$1 break;
+        proxy_pass          http://10.43.0.11:8989;
+        proxy_read_timeout  90;
+
+    }
+    
+    location /faq {
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        proxy_pass          http://10.43.0.11:5555/api;
+        proxy_read_timeout  90;
+    }
+}

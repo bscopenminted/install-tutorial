@@ -1,6 +1,7 @@
 - hosts: 127.0.0.1
   tasks:
           - name: Installing postgresql utils
+            become: True
             package:
                name: postgresql-client
                state: present
@@ -9,6 +10,7 @@
             shell: psql -h {{ groups['manager'][0] }} -Uvrasidas -d registry < ../properties/batch.sql
 
           - name: Remove postgresql utils
+            become: True
             package:
                name: postgresql-client
                state: absent
